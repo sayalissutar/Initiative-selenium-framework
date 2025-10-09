@@ -46,7 +46,7 @@ public class InitiativeTest extends BaseTest {
 	}
 
 
-    @Test(priority = 1, enabled = false)
+    @Test(priority = 1, enabled = true)
     @Description("TC_001 - Verify Initiative List Page Header")
     @Story("Initiative Navigation")
     @Severity(SeverityLevel.CRITICAL)
@@ -101,7 +101,7 @@ public class InitiativeTest extends BaseTest {
     }
 
     // ✅ This now uses full row data from Excel with Window Handle Management
-    @Test(priority = 3, enabled = true, dataProvider = "initiativeData")
+    @Test(priority = 3, enabled = false, dataProvider = "initiativeData")
     @Description("TC_003 - Create New Initiative with Window Handle Management")
     @Story("Initiative Creation")
     @Severity(SeverityLevel.CRITICAL)
