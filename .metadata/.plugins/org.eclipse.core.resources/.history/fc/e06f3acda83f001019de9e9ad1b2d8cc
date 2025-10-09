@@ -1,0 +1,187 @@
+
+package Pages;
+
+import Locators.InitiativePageLocators;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.Assert;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+
+public class InitiativePage {
+
+    private WebDriver driver;
+
+    // Constructor
+    public InitiativePage(WebDriver driver) {
+        this.driver = driver;
+    }
+
+    public void navigateToInitiative() throws InterruptedException {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(80));
+
+        try {
+            System.out.println("⏳ Waiting for 'initree' to be clickable...");
+            wait.until(ExpectedConditions.elementToBeClickable(InitiativePageLocators.initree)).click();
+            System.out.println("✅ Clicked on 'initree'");
+
+            System.out.println("⏳ Waiting for 'initiativeOption' to be clickable...");
+            wait.until(ExpectedConditions.elementToBeClickable(InitiativePageLocators.initiativeOption)).click();
+            System.out.println("✅ Clicked on 'initiativeOption'");
+
+            System.out.println("⏳ Waiting for 'initiativeNode' to be clickable...");
+            wait.until(ExpectedConditions.elementToBeClickable(InitiativePageLocators.initiativeNode)).click();
+            System.out.println("✅ Clicked on 'initiativeNode'");
+
+        } catch (Exception e) {
+            System.err.println("❌ Exception in navigateToInitiative: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public boolean isAtInitiativePage() {
+        return driver.findElement(InitiativePageLocators.pageHeader).isDisplayed();
+    }
+
+    public String getPageHeaderText() {
+        return driver.findElement(InitiativePageLocators.pageHeader).getText().trim();
+    }
+
+    
+    public List<String> verifyFiltersAndSearch() {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        List<String> actualFilters = new ArrayList<>();
+
+        try {
+            WebElement inbox = wait.until(ExpectedConditions.visibilityOfElementLocated(InitiativePageLocators.inboxFilter));
+            WebElement watchlist = wait.until(ExpectedConditions.visibilityOfElementLocated(InitiativePageLocators.watchlistFilter));
+            WebElement draft = wait.until(ExpectedConditions.visibilityOfElementLocated(InitiativePageLocators.draftFilter));
+
+            actualFilters.add(inbox.getText().trim());
+            actualFilters.add(watchlist.getText().trim());
+            actualFilters.add(draft.getText().trim());
+
+        } catch (TimeoutException e) {
+            System.out.println("❌ One or more filters did not appear in time.");
+            throw e;
+        }
+
+        return actualFilters;
+    }
+
+    
+
+    
+
+    // Utility method to extract only digits from text
+    private int extractDigits(String text) {
+        return Integer.parseInt(text.replaceAll("\\D", ""));
+    }
+
+    public int getDraftCountFromHeader1() {
+        String countText = driver.findElement(InitiativePageLocators.draftFilterCount).getText().trim();
+        return Integer.parseInt(countText);
+    }
+    public int getDraftCountFromHeader() {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(100));
+        WebElement draftCountElement = wait.until(ExpectedConditions.visibilityOfElementLocated(InitiativePageLocators.draftFilterCount));
+        
+        String countText = draftCountElement.getText().trim();
+        return Integer.parseInt(countText);
+    }
+
+
+    public int getTotalDraftRecordsAcrossPages() {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+        int totalRecordCount = 0;
+
+        try {
+            // Open Draft tab
+            wait.until(ExpectedConditions.elementToBeClickable(InitiativePageLocators.draftFilterCount)).click();
+        } catch (TimeoutException e) {
+            System.out.println("Draft filter count not clickable. Exiting.");
+            return 0;
+        }
+
+        while (true) {
+            List<WebElement> rows;
+
+            try {
+                rows = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(
+                    InitiativePageLocators.totalRowsOnPage
+                ));
+            } catch (StaleElementReferenceException | TimeoutException e) {
+                System.out.println("Retrying row fetch due to DOM refresh or timeout...");
+                continue;
+            }
+
+            if (rows.isEmpty()) {
+                System.out.println("No rows found on this page. Assuming it's the end.");
+                break;
+            }
+
+            totalRecordCount += rows.size();
+            String currentFirstRowText = rows.get(0).getText();
+
+            // Try to click the "Next" button if available
+            By nextButtonLocator = By.xpath("//button[@aria-label='Go to next page' and not(@disabled)]");
+
+            try {
+                WebElement nextButton = wait.until(ExpectedConditions.elementToBeClickable(nextButtonLocator));
+
+                // Scroll into view and click using JavaScript
+                ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", nextButton);
+                ((JavascriptExecutor) driver).executeScript("arguments[0].click();", nextButton);
+
+                // Wait for the page to change (first row content to change)
+                wait.until(ExpectedConditions.not(
+                    ExpectedConditions.textToBePresentInElementLocated(
+                        By.xpath("//table//tbody/tr[1]"),
+                        currentFirstRowText
+                    )
+                ));
+
+                // Optional: small delay
+                Thread.sleep(500);
+
+            } catch (TimeoutException e) {
+                System.out.println("Next button not found or not clickable - assuming last page.");
+                break;
+            } catch (Exception e) {
+                System.out.println("Error clicking next button: " + e.getMessage());
+                break;
+            }
+        }
+
+        System.out.println("✅ Total draft records found across pages: " + totalRecordCount);
+        return totalRecordCount;
+    }
+
+
+
+    public void verifyDraftCountMatches() throws InterruptedException {
+        int headerCount = getDraftCountFromHeader();
+        int actualRecords = getTotalDraftRecordsAcrossPages();
+
+        if (headerCount == actualRecords) {
+            System.out.println("✅ Draft count matches: " + actualRecords);
+        } else {
+            System.out.println("❌ Mismatch! Header: " + headerCount + ", Actual: " + actualRecords);
+        }
+
+        Assert.assertEquals(actualRecords, headerCount, "Mismatch between header count and actual record count!");
+    }
+}
+        
+

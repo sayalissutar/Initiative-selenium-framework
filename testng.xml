@@ -1,0 +1,13 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Initiative Automation Suite">
+  <listeners>
+    <listener class-name="io.qameta.allure.testng.AllureTestNg" />
+    <listener class-name="Utils.TestListener" />
+  </listeners>
+  
+  <test name="Initiative Tests">
+        <classes>
+            <class name="tests.InitiativeTest" />
+        </classes> 
+    </test> 
+</suite>
