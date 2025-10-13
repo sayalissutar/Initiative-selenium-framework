@@ -3,6 +3,7 @@
     <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
     <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.testng.remote.RemoteTestNG"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="InitiativeAutomationFramework"/>
+    <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
     <listAttribute key="org.testng.eclipse.SUITE_TEST_LIST">
         <listEntry value="D:\Sayali\Selenium Project\InitiativeAutomationFramework\InitiativeAutomationFramework\testng.xml"/>
     </listAttribute>

@@ -54,7 +54,7 @@ public class InitiativeTest extends BaseTest {
         initiativePage = new InitiativePage(webDriver, reportLogger);
         navigateToInitiativePage();
         verifyInitiativeHeader();
-        System.out.println("✅ Initiative navigation and header verified");
+        System.out.println("✅ Initiative navigation and header verified Correctly");
     }
 
     @Step("Navigate to Initiative Page")
