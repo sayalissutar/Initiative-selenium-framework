@@ -101,7 +101,7 @@ public class InitiativeTest extends BaseTest {
     }
 
     // ✅ This now uses full row data from Excel with Window Handle Management
-    @Test(priority = 3, enabled = false, dataProvider = "initiativeData")
+    @Test(priority = 3, enabled = true, dataProvider = "initiativeData")
     @Description("TC_003 - Create New Initiative with Window Handle Management")
     @Story("Initiative Creation")
     @Severity(SeverityLevel.CRITICAL)
