@@ -12,6 +12,6 @@ public class LoginTest extends BaseTest {
         // Wait to keep browser open for demo
         Thread.sleep(5000);
 
-        System.out.println("🔹 Login Page Test Ended");
+        System.out.println("🔹 Login Page Test Ended here");
     }
 }
