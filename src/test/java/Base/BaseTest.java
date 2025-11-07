@@ -45,6 +45,7 @@ import io.qameta.allure.model.Status;
 import Pages.InitiativePage;
 import Pages.LoginPage;
 import Utils.ExcelReader;
+import Utils.LoginHelper;
 import Utils.ScreenshotUtil;
 import io.github.bonigarcia.wdm.WebDriverManager;
 
@@ -54,6 +55,7 @@ public class BaseTest {
     protected static ExtentReports extent;
     protected static ExtentTest reportLogger;
     private LoginPage loginPage;
+    protected LoginHelper loginHelper;
     protected InitiativePage initiativePage;
 
     protected String username, password, Title, Description, BG, OU;
@@ -61,6 +63,9 @@ public class BaseTest {
     // ✅ Config file
     protected static Properties config;
     protected static final Logger log = LogManager.getLogger(BaseTest.class);
+    
+    // ✅ Flag to use LoginHelper (set to true to use configuration-based auth)
+    protected boolean useLoginHelper = true;
 
     @BeforeClass
     public void setupExtent() throws Exception {
@@ -150,14 +155,23 @@ public class BaseTest {
 
         // ✅ Initialize Page Objects
         loginPage = new LoginPage(webDriver, reportLogger);
+        loginHelper = new LoginHelper(webDriver, reportLogger, config);
         initiativePage = new InitiativePage(webDriver, reportLogger);
 
-        // ✅ Perform login if credentials exist
-        if (username != null && password != null) {
-            loginPage.login(username, password);
-            log.info("Login successful with user: " + username);
+        // ✅ Perform login
+        if (useLoginHelper) {
+            // Use LoginHelper for configuration-based authentication
+            log.info("Using LoginHelper for authentication");
+            loginHelper.performLogin();
+            log.info("Login successful using LoginHelper");
         } else {
-            log.warn("⚠️ Username/Password not set. Login skipped.");
+            // Use legacy auto-detection login
+            if (username != null && password != null) {
+                loginPage.login(username, password);
+                log.info("Login successful with user: " + username);
+            } else {
+                log.warn("⚠️ Username/Password not set. Login skipped.");
+            }
         }
     }
 

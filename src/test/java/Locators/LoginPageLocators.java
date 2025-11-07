@@ -13,8 +13,8 @@ import org.openqa.selenium.WebElement;
 	
 	private By i0116 =By.id("i0116");
 	private By useAnotherAccountOption = By.xpath("//div[@id='otherTileText']");
-    private By emailField = By.xpath("//input[@type='email']");
-    private By passwordField = By.xpath("//input[@type='password']");
+    private By emailField = By.xpath("//input[@id='i0116']");
+    private By passwordField = By.xpath("//input[@id='i0118']");
     //private By Confirmbutton=By.xpath("//input[@id='idSIButton9']");
     private By Confirmbutton = By.xpath("//input[@type='submit']");
     //private By Confirmbutton=By.xpath("//input[@class='win-button button_primary high-contrast-overrides button ext-button primary ext-primary']");

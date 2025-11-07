@@ -46,16 +46,31 @@ public class InitiativeTest extends BaseTest {
 	}
 
 
-    @Test(priority = 1, enabled = true)
-    @Description("TC_001 - Verify Initiative List Page Header")
+    @Test(priority = 1, enabled = false)
+    @Description("TC_001 - Verify Initiative List Page Header with Close Button")
     @Story("Initiative Navigation")
     @Severity(SeverityLevel.CRITICAL)
     public void TC_001() throws Throwable {
         initiativePage = new InitiativePage(webDriver, reportLogger);
+        
+        // Step 1: Click close button after login
+        //clickCloseButtonAfterLogin();
+        
+        // Step 2: Navigate to Initiative tree
         navigateToInitiativePage();
+        
+        // Step 3: Verify header
         verifyInitiativeHeader();
+        
         System.out.println("✅ Initiative navigation and header verified Correct");
     }
+
+	/*
+	 * @Step("Click Close Button After Login") private void
+	 * clickCloseButtonAfterLogin() throws Throwable {
+	 * initiativePage.clickCloseButton();
+	 * reportLogger.info("Close button clicked after login"); }
+	 */
 
     @Step("Navigate to Initiative Page")
     private void navigateToInitiativePage() throws Throwable {
@@ -101,7 +116,7 @@ public class InitiativeTest extends BaseTest {
     }
 
     // ✅ This now uses full row data from Excel with Window Handle Management
-    @Test(priority = 3, enabled = false, dataProvider = "initiativeData")
+    @Test(priority = 3, enabled = true, dataProvider = "initiativeData")
     @Description("TC_003 - Create New Initiative with Window Handle Management")
     @Story("Initiative Creation")
     @Severity(SeverityLevel.CRITICAL)
@@ -109,6 +124,10 @@ public class InitiativeTest extends BaseTest {
         // Store parent window at the start
         storeParentWindow();
         
+        // Step 1: Click close button after login (if present)
+       // clickCloseButtonAfterLogin();
+        
+        // Step 2: Navigate and create initiative
         navigateToInitiativePage();
         clickInitiativeBeforeAdd();
         clickAddButton();
@@ -263,21 +282,11 @@ public class InitiativeTest extends BaseTest {
             log.info("✅ Modal appeared successfully");
             
             // Step 2: Wait extra time for modal to be fully ready
-            Thread.sleep(2000);
+            Thread.sleep(3000);
             log.info("Waited for modal to be fully interactive");
             
-            // Step 3: Wait for textarea to be visible and clickable
-            initiativePage.waitForElementToBeVisible(
-                Locators.InitiativePageLocators.additionalNotes,
-                "Additional Comments Textarea"
-            );
-            initiativePage.waitForElementToBeClickable(
-                Locators.InitiativePageLocators.additionalNotes,
-                "Additional Comments Textarea"
-            );
-            log.info("Textarea is ready");
-            
-            // Step 4: Type in the modal textarea using typeInModal method
+            // Step 3: Type in the modal textarea using typeInModal method
+            // This will use the enhanced setAdditionalNotes method with 12 strategies
             initiativePage.typeInModal(
                 Locators.InitiativePageLocators.additionalNotes,
                 notes,
@@ -285,21 +294,16 @@ public class InitiativeTest extends BaseTest {
             );
             log.info("✅ Typed comments in modal: " + notes);
             
-            // Step 5: Wait for Submit button to be clickable
-            initiativePage.waitForElementToBeClickable(
-                Locators.InitiativePageLocators.Submit,
-                "Submit Button"
-            );
-            log.info("Submit button is ready");
+            // Step 4: Wait before clicking submit
+            Thread.sleep(2000);
+            log.info("Waiting before submit");
             
-            // Step 6: Click Submit button in modal
-            initiativePage.clickElementInModal(
-                Locators.InitiativePageLocators.Submit,
-                "Submit Button"
-            );
+            // Step 5: Click Submit button INSIDE the modal popup
+            // Using Clickpopsub() which has 15 strategies including Tab navigation
+            initiativePage.Clickpopsub();
             log.info("✅ Clicked Submit in modal");
             
-            // Step 7: Wait for modal to close
+            // Step 6: Wait for modal to close
             Thread.sleep(2000);
             
             System.out.println("✅ Modal overlay handled successfully");
@@ -314,12 +318,7 @@ public class InitiativeTest extends BaseTest {
     
   
     
-    @Step("Submit Initiative")
-    private void Clickpopsub() throws Throwable {
-        initiativePage.Clickpopsub();
-      
-    }
-    
+
     @Test(priority = 4, enabled = false, dataProvider = "initiativeData")
     @Description("TC_004 - Verify Alert Message")
     @Story("Initiative Validation")

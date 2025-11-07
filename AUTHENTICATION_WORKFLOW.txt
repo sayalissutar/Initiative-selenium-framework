@@ -1,0 +1,261 @@
+╔═══════════════════════════════════════════════════════════════════════════════════╗
+║                    CONFIGURABLE AUTHENTICATION WORKFLOW                           ║
+╚═══════════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  STEP 1: Configure Authentication Type                                          │
+│  File: src/main/resources/config.properties                                     │
+└─────────────────────────────────────────────────────────────────────────────────┘
+                                     │
+                ┌────────────────────┴────────────────────┐
+                │                                         │
+                ↓                                         ↓
+    ┌───────────────────────┐              ┌────────────────────────┐
+    │   authType=FORM       │              │   authType=SSO         │
+    │   username=User1      │              │   username=user@co.com │
+    │   password=123456     │              │   password=Pass123     │
+    └───────────────────────┘              └────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  STEP 2: Test Execution Starts                                                  │
+│  File: Base/BaseTest.java                                                       │
+└─────────────────────────────────────────────────────────────────────────────────┘
+                                     │
+                                     ↓
+                    ┌────────────────────────────────┐
+                    │  @BeforeMethod setUp()         │
+                    │  - Initialize WebDriver        │
+                    │  - Navigate to URL             │
+                    │  - Create LoginPage instance   │
+                    └────────────────────────────────┘
+                                     │
+                                     ↓
+                    ┌────────────────────────────────┐
+                    │  loginPage.login(user, pass)   │
+                    └────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  STEP 3: LoginPage Routes to Appropriate Method                                 │
+│  File: Pages/LoginPage.java                                                     │
+└─────────────────────────────────────────────────────────────────────────────────┘
+                                     │
+                                     ↓
+                    ┌────────────────────────────────┐
+                    │  Is authType configured?       │
+                    └────────────────────────────────┘
+                                     │
+                    ┌────────────────┴────────────────┐
+                    │                                 │
+                    ↓ YES                             ↓ NO
+    ┌───────────────────────────┐      ┌──────────────────────────────┐
+    │  Use LoginHelper          │      │  Use Legacy Auto-Detection   │
+    │  (Configurable Auth)      │      │  (Backward Compatible)       │
+    └───────────────────────────┘      └──────────────────────────────┘
+                    │
+                    ↓
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  STEP 4: LoginHelper Processes Authentication                                   │
+│  File: Utils/LoginHelper.java                                                   │
+└─────────────────────────────────────────────────────────────────────────────────┘
+                                     │
+                    ┌────────────────┴────────────────┐
+                    ↓                                 ↓
+        ┌───────────────────────┐        ┌───────────────────────┐
+        │  authType = SSO       │        │  authType = FORM      │
+        └───────────────────────┘        └───────────────────────┘
+                    │                                 │
+                    ↓                                 ↓
+        ┌───────────────────────┐        ┌───────────────────────┐
+        │ performSSOLogin()     │        │ performFormLogin()    │
+        └───────────────────────┘        └───────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  STEP 5A: SSO Authentication Flow                                               │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+    1. Wait for page load
+            │
+            ↓
+    2. Check if on Microsoft domain
+            │
+            ↓
+    3. Click "Use another account" (if present)
+            │
+            ↓
+    4. Wait for email field → Enter email → Log
+            │
+            ↓
+    5. Click Next/Submit button → Log
+            │
+            ↓
+    6. Wait for password field → Enter password → Log
+            │
+            ↓
+    7. Click Sign In button → Log
+            │
+            ↓
+    8. Handle "Stay signed in?" prompt (if present)
+            │
+            ↓
+    9. Log success in Extent Report
+            │
+            ↓
+   ✅ SSO Authentication Complete
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  STEP 5B: Form Authentication Flow                                              │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+    1. Wait for page load
+            │
+            ↓
+    2. Wait for username field → Enter username → Log
+            │
+            ↓
+    3. Press TAB to move to next field
+            │
+            ↓
+    4. Wait for password field → Try multiple strategies:
+            │
+            ├─→ Strategy 1: Direct element find
+            │
+            ├─→ Strategy 2: Check iframes
+            │
+            └─→ Strategy 3: JavaScript injection
+            │
+            ↓
+    5. Enter password → Log
+            │
+            ↓
+    6. Wait for Sign In button → Click → Log
+            │
+            ↓
+    7. Wait for login to complete
+            │
+            ↓
+    8. Log success in Extent Report
+            │
+            ↓
+   ✅ Form Authentication Complete
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  STEP 6: Test Continues with Authenticated Session                              │
+└─────────────────────────────────────────────────────────────────────────────────┘
+                                     │
+                                     ↓
+                    ┌────────────────────────────────┐
+                    │  Execute Test Logic            │
+                    │  - Navigate pages              │
+                    │  - Perform actions             │
+                    │  - Assert results              │
+                    └────────────────────────────────┘
+                                     │
+                                     ↓
+                    ┌────────────────────────────────┐
+                    │  @AfterMethod tearDown()       │
+                    │  - Capture screenshots         │
+                    │  - Log to Extent Report        │
+                    │  - Close browser               │
+                    └────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  LOGGING & REPORTING                                                             │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+    Every step logs to:
+    
+    ┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
+    │  Extent Reports  │    │  Console Output  │    │  System Logs     │
+    │  (HTML Report)   │    │  (Real-time)     │    │  (Debugging)     │
+    └──────────────────┘    └──────────────────┘    └──────────────────┘
+            │                       │                        │
+            └───────────────────────┴────────────────────────┘
+                                    │
+                                    ↓
+                    ┌───────────────────────────────┐
+                    │  Detailed Authentication Log  │
+                    │  - Auth Type Used             │
+                    │  - Each Step Executed         │
+                    │  - Success/Failure Status     │
+                    │  - Screenshots (on failure)   │
+                    └───────────────────────────────┘
+
+╔═══════════════════════════════════════════════════════════════════════════════════╗
+║                            SWITCHING AUTHENTICATION                               ║
+╚═══════════════════════════════════════════════════════════════════════════════════╝
+
+    TO SWITCH FROM FORM → SSO:                TO SWITCH FROM SSO → FORM:
+    
+    1. Open config.properties                 1. Open config.properties
+    2. Change authType=FORM                   2. Change authType=SSO
+       to authType=SSO                           to authType=FORM
+    3. Update username to email               3. Update username to simple name
+       (e.g., user@company.com)                  (e.g., User1)
+    4. Save file                              4. Save file
+    5. Run tests                              5. Run tests
+    
+    ✅ No code changes needed!                ✅ No code changes needed!
+
+╔═══════════════════════════════════════════════════════════════════════════════════╗
+║                            FALLBACK MECHANISMS                                    ║
+╚═══════════════════════════════════════════════════════════════════════════════════╝
+
+    Password Field Finding Strategies (in order):
+    
+    1. ┌────────────────────────────────────────────────┐
+       │  Direct Element Locator                        │
+       │  Wait + Find + Type                            │
+       └────────────────────────────────────────────────┘
+                           │ if fails
+                           ↓
+    2. ┌────────────────────────────────────────────────┐
+       │  Check All Iframes                             │
+       │  Switch to frame containing password field     │
+       └────────────────────────────────────────────────┘
+                           │ if fails
+                           ↓
+    3. ┌────────────────────────────────────────────────┐
+       │  JavaScript Injection                          │
+       │  Query all password inputs + set value via JS  │
+       └────────────────────────────────────────────────┘
+                           │ if fails
+                           ↓
+       ❌ Report error with detailed message
+
+╔═══════════════════════════════════════════════════════════════════════════════════╗
+║                         FILE STRUCTURE OVERVIEW                                   ║
+╚═══════════════════════════════════════════════════════════════════════════════════╝
+
+    Project Root
+    │
+    ├── src/
+    │   ├── main/
+    │   │   └── resources/
+    │   │       └── config.properties ⭐ (Configure authType here)
+    │   │
+    │   └── test/
+    │       └── java/
+    │           ├── Base/
+    │           │   └── BaseTest.java (Calls login)
+    │           │
+    │           ├── Pages/
+    │           │   └── LoginPage.java ⭐ (Routes to LoginHelper)
+    │           │
+    │           ├── Utils/
+    │           │   └── LoginHelper.java ⭐ (Authentication logic)
+    │           │
+    │           └── examples/
+    │               └── LoginHelperExample.java (Usage examples)
+    │
+    ├── QUICK_START_AUTH.md ⭐ (Quick reference)
+    ├── AUTHENTICATION_GUIDE.md ⭐ (Detailed guide)
+    ├── IMPLEMENTATION_SUMMARY.md ⭐ (This implementation)
+    └── AUTHENTICATION_WORKFLOW.txt ⭐ (This file)
+
+    ⭐ = Key files for authentication system
+
+╔═══════════════════════════════════════════════════════════════════════════════════╗
+║                                END OF WORKFLOW                                    ║
+╚═══════════════════════════════════════════════════════════════════════════════════╝
+
