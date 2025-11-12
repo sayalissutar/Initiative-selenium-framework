@@ -2190,6 +2190,259 @@ public class InitiativePage extends ActionEngine {
         }
     }
 
+    // ==================== INBOX COUNT VERIFICATION METHODS ====================
+    
+    /**
+     * Click Inbox filter button
+     */
+    public void clickInboxFilter() {
+        try {
+            System.out.println("\n📥 Clicking Inbox Filter");
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            WebElement inboxButton = wait.until(ExpectedConditions.elementToBeClickable(InitiativePageLocators.inboxFilter));
+            
+            // Scroll into view
+            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", inboxButton);
+            Thread.sleep(500);
+            
+            inboxButton.click();
+            Thread.sleep(2000); // Wait for grid to load
+            
+            System.out.println("✅ Inbox filter clicked successfully");
+            if (reportLogger != null) {
+                reportLogger.pass("Clicked Inbox filter");
+            }
+        } catch (Exception e) {
+            System.out.println("❌ Failed to click Inbox filter: " + e.getMessage());
+            if (reportLogger != null) {
+                reportLogger.fail("Failed to click Inbox filter: " + e.getMessage());
+            }
+            throw new RuntimeException("Failed to click Inbox filter", e);
+        }
+    }
+    
+    /**
+     * Get the count displayed on Inbox filter badge
+     * 
+     * @return Inbox count as integer
+     */
+    public int getInboxCount() {
+        try {
+            System.out.println("\n🔢 Getting Inbox Count from Badge");
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            
+            // Try multiple locators to find the count
+            By[] countLocators = {
+                By.xpath("//span[normalize-space()='Inbox']/following-sibling::span"),
+                By.xpath("//span[normalize-space()='Inbox']/..//span[contains(@class,'count')]"),
+                By.xpath("//span[normalize-space()='Inbox']/..//span[contains(@class,'badge')]"),
+                By.xpath("//button[contains(.,'Inbox')]//span[contains(@class,'count')]")
+            };
+            
+            for (By locator : countLocators) {
+                try {
+                    if (!driver.findElements(locator).isEmpty()) {
+                        WebElement countElement = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+                        String countText = countElement.getText().trim();
+                        
+                        // Extract numbers from text (e.g., "(5)" -> "5")
+                        countText = countText.replaceAll("[^0-9]", "");
+                        
+                        if (!countText.isEmpty()) {
+                            int count = Integer.parseInt(countText);
+                            System.out.println("  📊 Inbox Count from Badge: " + count);
+                            return count;
+                        }
+                    }
+                } catch (Exception e) {
+                    // Try next locator
+                    continue;
+                }
+            }
+            
+            System.out.println("  ⚠️ Could not find inbox count badge, returning 0");
+            return 0;
+            
+        } catch (Exception e) {
+            System.out.println("❌ Failed to get inbox count: " + e.getMessage());
+            if (reportLogger != null) {
+                reportLogger.warning("Failed to get inbox count: " + e.getMessage());
+            }
+            return 0;
+        }
+    }
+    
+    /**
+     * Get the count of records displayed in the grid
+     * 
+     * @return Number of visible records in grid
+     */
+    public int getGridRecordsCount() {
+        try {
+            System.out.println("\n📋 Counting Records in Grid");
+            Thread.sleep(1000); // Wait for grid to stabilize
+            
+            // Try multiple locators for grid rows
+            By[] rowLocators = {
+                By.xpath("//div[@role='row' and contains(@class,'ag-row')]"),
+                By.xpath("//div[contains(@class,'ag-center-cols-container')]//div[@role='row']"),
+                By.xpath("//table//tbody//tr[@role='row']"),
+                By.xpath("//div[@role='gridcell']/../.."),
+                By.xpath("//div[contains(@class,'data-grid')]//div[@role='row']")
+            };
+            
+            for (By locator : rowLocators) {
+                try {
+                    List<WebElement> rows = driver.findElements(locator);
+                    if (!rows.isEmpty()) {
+                        // Filter out any header or empty rows
+                        int visibleRows = 0;
+                        for (WebElement row : rows) {
+                            try {
+                                if (row.isDisplayed() && 
+                                    !row.getAttribute("class").contains("header") &&
+                                    !row.getText().trim().isEmpty()) {
+                                    visibleRows++;
+                                }
+                            } catch (Exception e) {
+                                // Skip rows that throw exceptions
+                                continue;
+                            }
+                        }
+                        
+                        if (visibleRows > 0) {
+                            System.out.println("  📊 Grid Records Count: " + visibleRows);
+                            System.out.println("  📝 Using locator: " + locator.toString());
+                            return visibleRows;
+                        }
+                    }
+                } catch (Exception e) {
+                    // Try next locator
+                    continue;
+                }
+            }
+            
+            System.out.println("  ⚠️ Could not find grid rows, returning 0");
+            return 0;
+            
+        } catch (Exception e) {
+            System.out.println("❌ Failed to get grid records count: " + e.getMessage());
+            if (reportLogger != null) {
+                reportLogger.warning("Failed to get grid records count: " + e.getMessage());
+            }
+            return 0;
+        }
+    }
+    
+    /**
+     * Verify that Inbox count matches grid records count
+     * 
+     * @param expectedRecordsPerPage Expected number of records per page (default: 5)
+     * @return true if counts match, false otherwise
+     */
+    public boolean verifyInboxCountMatchesGrid(int expectedRecordsPerPage) {
+        try {
+            System.out.println("\n✅ ═══════════════════════════════════════════");
+            System.out.println("✅ VERIFYING INBOX COUNT vs GRID RECORDS");
+            System.out.println("✅ ═══════════════════════════════════════════");
+            
+            int inboxCount = getInboxCount();
+            int gridRecordsCount = getGridRecordsCount();
+            
+            System.out.println("\n📊 COMPARISON:");
+            System.out.println("  Inbox Badge Count: " + inboxCount);
+            System.out.println("  Grid Records Count: " + gridRecordsCount);
+            System.out.println("  Expected Records/Page: " + expectedRecordsPerPage);
+            
+            // Determine expected records on current page
+            int expectedOnPage = Math.min(inboxCount, expectedRecordsPerPage);
+            System.out.println("  Expected on Current Page: " + expectedOnPage);
+            
+            boolean matches = (gridRecordsCount == expectedOnPage);
+            
+            if (matches) {
+                System.out.println("\n✅ VERIFICATION PASSED!");
+                System.out.println("  Grid shows " + gridRecordsCount + " records as expected");
+                if (reportLogger != null) {
+                    reportLogger.pass("Inbox count verification PASSED - Grid shows " + gridRecordsCount + " records, matching expected count");
+                }
+            } else {
+                System.out.println("\n❌ VERIFICATION FAILED!");
+                System.out.println("  Expected: " + expectedOnPage + " records");
+                System.out.println("  Found: " + gridRecordsCount + " records");
+                System.out.println("  Difference: " + Math.abs(expectedOnPage - gridRecordsCount));
+                if (reportLogger != null) {
+                    reportLogger.fail("Inbox count verification FAILED - Expected " + expectedOnPage + " but found " + gridRecordsCount);
+                }
+            }
+            
+            System.out.println("✅ ═══════════════════════════════════════════\n");
+            return matches;
+            
+        } catch (Exception e) {
+            System.out.println("❌ Failed to verify inbox count: " + e.getMessage());
+            if (reportLogger != null) {
+                reportLogger.fail("Failed to verify inbox count: " + e.getMessage());
+            }
+            return false;
+        }
+    }
+    
+    /**
+     * Print detailed grid information for debugging
+     */
+    public void printGridDebugInfo() {
+        try {
+            System.out.println("\n🔍 DEBUG: Grid Information");
+            System.out.println("═══════════════════════════════════════════");
+            
+            // Try to find pagination info
+            try {
+                WebElement paginationInfo = driver.findElement(InitiativePageLocators.paginationInfo);
+                System.out.println("  Pagination: " + paginationInfo.getText());
+            } catch (Exception e) {
+                System.out.println("  Pagination: Not found");
+            }
+            
+            // Try to find total records
+            try {
+                WebElement totalRecords = driver.findElement(InitiativePageLocators.totalRecords);
+                System.out.println("  Total Records: " + totalRecords.getText());
+            } catch (Exception e) {
+                System.out.println("  Total Records: Not found");
+            }
+            
+            // List all visible rows
+            System.out.println("\n  Visible Rows:");
+            By[] rowLocators = {
+                By.xpath("//div[@role='row' and contains(@class,'ag-row')]"),
+                By.xpath("//table//tbody//tr[@role='row']")
+            };
+            
+            for (By locator : rowLocators) {
+                try {
+                    List<WebElement> rows = driver.findElements(locator);
+                    if (!rows.isEmpty()) {
+                        for (int i = 0; i < rows.size(); i++) {
+                            WebElement row = rows.get(i);
+                            if (row.isDisplayed()) {
+                                System.out.println("    Row " + (i + 1) + ": " + row.getText().substring(0, Math.min(50, row.getText().length())) + "...");
+                            }
+                        }
+                        break;
+                    }
+                } catch (Exception e) {
+                    continue;
+                }
+            }
+            
+            System.out.println("═══════════════════════════════════════════\n");
+            
+        } catch (Exception e) {
+            System.out.println("  Error printing debug info: " + e.getMessage());
+        }
+    }
+
     }
 
     

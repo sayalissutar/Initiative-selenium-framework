@@ -99,7 +99,7 @@ public class InitiativePageLocators {
     public static By draftFilter = By.xpath("//span[normalize-space()='Draft']");
     
     /** Inbox filter button */
-    public static By inboxFilter = By.xpath("//span[normalize-space()='Inbox']");
+    public static By inboxFilter = By.xpath("//span[id='FltrCountInbox']");
     
     /** Watchlist filter button */
     public static By watchlistFilter = By.xpath("//span[normalize-space()='Watchlist']");
@@ -114,6 +114,21 @@ public class InitiativePageLocators {
     
     /** Visible records count */
     public static By countRecords = By.xpath("//div[@class='count-info']");
+    
+    /** Inbox count displayed on filter */
+    public static By inboxCount = By.xpath("//span[id='FltrCountInbox']");
+    
+    /** Grid rows/records in the table */
+    public static By gridRows = By.xpath("//div[contains(@class,'ag-center-cols-container')]//div[@role='row'] | //table//tbody//tr[@role='row']");
+    
+    /** Grid data rows (excluding headers) */
+    public static By gridDataRows = By.xpath("//div[@role='gridcell' and @col-id] | //tbody//tr[@role='row' and not(contains(@class,'header'))]");
+    
+    /** Pagination info */
+    public static By paginationInfo = By.xpath("//div[contains(@class,'pagination')]//span[contains(text(),'of')]");
+    
+    /** Records per page dropdown */
+    public static By recordsPerPageDropdown = By.xpath("//select[contains(@class,'page-size')] | //div[contains(@class,'page-size')]//select");
     
     /** Toast alert message */
     public static By toastAlert = By.xpath("//div[@id=4]//div");

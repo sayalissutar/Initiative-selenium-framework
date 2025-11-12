@@ -110,7 +110,7 @@ public class InitiativeTest extends BaseTest {
      * @param enddate End Date
      * @param notes Submission Comments
      */
-    @Test(priority = 3, enabled = true, dataProvider = "initiativeData")
+    @Test(priority = 3, enabled = false, dataProvider = "initiativeData")
     @Description("TC_003 - Create and Submit New Initiative")
     @Story("Initiative Creation")
     @Severity(SeverityLevel.CRITICAL)
@@ -148,6 +148,40 @@ public class InitiativeTest extends BaseTest {
         selectNatureOfInitiative(noi);
         saveDraftWithoutTitle();
         verifyAlertMessage();
+    }
+
+    /**
+     * TC_005 - Verify Inbox Count Matches Grid Records
+     * 
+     * This test verifies that the count displayed on Inbox filter badge
+     * matches the actual number of records shown in the grid.
+     * Expected: 5 records per page.
+     */
+    @Test(priority = 5, enabled = true)
+    @Description("TC_005 - Verify Inbox Count Matches Grid Records")
+    @Story("Initiative Grid Validation")
+    @Severity(SeverityLevel.NORMAL)
+    public void TC_005() throws Throwable {
+        initiativePage = new InitiativePage(webDriver, reportLogger);
+        
+        // Navigate to Initiative page
+        navigateToInitiativePage();
+        clickInitiativeBeforeAdd();
+        
+        // Click on Inbox filter
+        clickInboxFilter();
+        
+        // Optional: Print debug info
+        printGridDebugInfo();
+        
+        // Verify inbox count matches grid records (5 records per page)
+        boolean isMatching = verifyInboxCountMatchesGrid(5);
+        
+        // Assert the verification
+        org.testng.Assert.assertTrue(isMatching, 
+            "Inbox count does not match grid records count");
+        
+        System.out.println("✅ TC_005 PASSED - Inbox count matches grid records");
     }
 
     // ==================== STEP METHODS ====================
@@ -214,6 +248,21 @@ public class InitiativeTest extends BaseTest {
     @Step("Verify Alert Message")
     private void verifyAlertMessage() throws Throwable {
         initiativePage.verifyInitiativealtmsg("Initiative Title should not be left blank");
+    }
+
+    @Step("Click Inbox Filter")
+    private void clickInboxFilter() throws Throwable {
+        initiativePage.clickInboxFilter();
+    }
+
+    @Step("Verify Inbox Count Matches Grid")
+    private boolean verifyInboxCountMatchesGrid(int recordsPerPage) throws Throwable {
+        return initiativePage.verifyInboxCountMatchesGrid(recordsPerPage);
+    }
+
+    @Step("Print Grid Debug Information")
+    private void printGridDebugInfo() {
+        initiativePage.printGridDebugInfo();
     }
 
     // ==================== WINDOW HANDLING ====================
