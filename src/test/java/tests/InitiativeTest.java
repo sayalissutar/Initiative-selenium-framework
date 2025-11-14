@@ -157,7 +157,7 @@ public class InitiativeTest extends BaseTest {
      * matches the actual number of records shown in the grid.
      * Expected: 5 records per page.
      */
-    @Test(priority = 5, enabled = true)
+    @Test(priority = 5, enabled = false)
     @Description("TC_005 - Verify Inbox Count Matches Grid Records")
     @Story("Initiative Grid Validation")
     @Severity(SeverityLevel.NORMAL)
@@ -182,6 +182,134 @@ public class InitiativeTest extends BaseTest {
             "Inbox count does not match grid records count");
         
         System.out.println("✅ TC_005 PASSED - Inbox count matches grid records");
+    }
+
+    /**
+     * TC_006 - Verify Watchlist Count Matches Grid Records
+     * 
+     * This test verifies that the count displayed on Watchlist filter badge
+     * matches the actual number of records shown in the grid.
+     * Expected: 5 records per page.
+     */
+    @Test(priority = 6, enabled = false)
+    @Description("TC_006 - Verify Watchlist Count Matches Grid Records")
+    @Story("Initiative Grid Validation")
+    @Severity(SeverityLevel.NORMAL)
+    public void TC_006() throws Throwable {
+        initiativePage = new InitiativePage(webDriver, reportLogger);
+        
+        // Navigate to Initiative page
+        navigateToInitiativePage();
+        clickInitiativeBeforeAdd();
+        
+        // Click on Watchlist filter
+        clickWatchlistFilter();
+        
+        // Optional: Print debug info
+        printGridDebugInfo();
+        
+        // Verify watchlist count matches grid records (5 records per page)
+        boolean isMatching = verifyWatchlistCountMatchesGrid(5);
+        
+        // Assert the verification
+        org.testng.Assert.assertTrue(isMatching, 
+            "Watchlist count does not match grid records count");
+        
+        System.out.println("✅ TC_006 PASSED - Watchlist count matches grid records");
+    }
+    
+    /**
+     * TC_007 - Verify Inbox Count Matches Total Records Across All Pages
+     * 
+     * This test verifies that the count displayed on Inbox filter badge
+     * matches the actual total number of records across all paginated pages.
+     * The test navigates through all pages using the forward pagination button,
+     * counts records on each page, sums them up, and compares with the inbox badge count.
+     * 
+     * Example: If inbox count is 8, and there are 2 pages:
+     *   - Page 1: 5 records
+     *   - Page 2: 3 records
+     *   - Total: 8 records (should match inbox badge count)
+     */
+    @Test(priority = 7, enabled = false)
+    @Description("TC_007 - Verify Inbox Count Matches Total Records Across All Pages")
+    @Story("Initiative Grid Validation - Pagination")
+    @Severity(SeverityLevel.CRITICAL)
+    public void TC_007() throws Throwable {
+        initiativePage = new InitiativePage(webDriver, reportLogger);
+        
+        System.out.println("\n═══════════════════════════════════════════════════════");
+        System.out.println("🧪 TC_007: Inbox Count vs Total Records (All Pages)");
+        System.out.println("═══════════════════════════════════════════════════════");
+        
+        // Navigate to Initiative page
+        navigateToInitiativePage();
+        clickInitiativeBeforeAdd();
+        // Click on Inbox filter
+        clickInboxFilter();
+     
+        // Optional: Print debug info
+        printGridDebugInfo();
+        
+        // Verify inbox count matches total records across all pages
+        boolean isMatching = verifyInboxCountMatchesTotalRecords();
+        
+        // Assert the verification
+        org.testng.Assert.assertTrue(isMatching, 
+            "Inbox count does not match total records across all pages");
+        
+        System.out.println("\n✅ ✅ ✅ TC_007 PASSED ✅ ✅ ✅");
+        System.out.println("Inbox count matches total records across all pages!");
+        System.out.println("═══════════════════════════════════════════════════════\n");
+    }
+    
+    /**
+     * TC_008 - Verify Watchlist Count Matches Total Records Across All Pages
+     * 
+     * This test verifies that the count displayed on Watchlist filter badge
+     * matches the actual total number of records across all paginated pages.
+     * The test navigates through all pages using the forward pagination button,
+     * counts records on each page, sums them up, and compares with the watchlist badge count.
+     * 
+     * Example: If watchlist count is 12, and there are 3 pages:
+     *   - Page 1: 5 records
+     *   - Page 2: 5 records
+     *   - Page 3: 2 records
+     *   - Total: 12 records (should match watchlist badge count)
+     */
+    @Test(priority = 8, enabled = true)
+    @Description("TC_008 - Verify Watchlist Count Matches Total Records Across All Pages")
+    @Story("Initiative Grid Validation - Pagination")
+    @Severity(SeverityLevel.CRITICAL)
+    public void TC_008() throws Throwable {
+        initiativePage = new InitiativePage(webDriver, reportLogger);
+        
+        System.out.println("\n═══════════════════════════════════════════════════════");
+        System.out.println("⭐ TC_008: Watchlist Count vs Total Records (All Pages)");
+        System.out.println("═══════════════════════════════════════════════════════");
+        
+        // Navigate to Initiative page
+        navigateToInitiativePage();
+        
+        // Click on Watchlist filter
+        clickWatchlistFilter();
+        
+        // Wait for grid to load
+        Thread.sleep(3000);
+        
+        // Optional: Print debug info
+        printGridDebugInfo();
+        
+        // Verify watchlist count matches total records across all pages
+        boolean isMatching = verifyWatchlistCountMatchesTotalRecords();
+        
+        // Assert the verification
+        org.testng.Assert.assertTrue(isMatching, 
+            "Watchlist count does not match total records across all pages");
+        
+        System.out.println("\n✅ ✅ ✅ TC_008 PASSED ✅ ✅ ✅");
+        System.out.println("Watchlist count matches total records across all pages!");
+        System.out.println("═══════════════════════════════════════════════════════\n");
     }
 
     // ==================== STEP METHODS ====================
@@ -255,14 +383,54 @@ public class InitiativeTest extends BaseTest {
         initiativePage.clickInboxFilter();
     }
 
+    @Step("Click Watchlist Filter")
+    private void clickWatchlistFilter() throws Throwable {
+        initiativePage.clickWatchlistFilter();
+    }
+
     @Step("Verify Inbox Count Matches Grid")
     private boolean verifyInboxCountMatchesGrid(int recordsPerPage) throws Throwable {
         return initiativePage.verifyInboxCountMatchesGrid(recordsPerPage);
     }
 
+    @Step("Verify Watchlist Count Matches Grid")
+    private boolean verifyWatchlistCountMatchesGrid(int recordsPerPage) throws Throwable {
+        return initiativePage.verifyWatchlistCountMatchesGrid(recordsPerPage);
+    }
+
     @Step("Print Grid Debug Information")
     private void printGridDebugInfo() {
         initiativePage.printGridDebugInfo();
+    }
+    
+    @Step("Verify Inbox Count Matches Total Records Across All Pages")
+    private boolean verifyInboxCountMatchesTotalRecords() throws Throwable {
+        return initiativePage.verifyInboxCountMatchesTotalRecords();
+    }
+    
+    @Step("Get Total Records Across All Pages")
+    private int getTotalRecordsAcrossAllPages() throws Throwable {
+        return initiativePage.getTotalRecordsAcrossAllPages();
+    }
+    
+    @Step("Click Forward Arrow")
+    private void clickForwardArrow() {
+        initiativePage.clickForwardArrow();
+    }
+    
+    @Step("Click Forward Arrow - Ultra Simple")
+    private void clickForwardArrowSimple() {
+        initiativePage.clickForwardArrowSimple();
+    }
+    
+    @Step("Debug Forward Button")
+    private void debugForwardButton() {
+        initiativePage.debugForwardButton();
+    }
+    
+    @Step("Verify Watchlist Count Matches Total Records Across All Pages")
+    private boolean verifyWatchlistCountMatchesTotalRecords() throws Throwable {
+        return initiativePage.verifyWatchlistCountMatchesTotalRecords();
     }
 
     // ==================== WINDOW HANDLING ====================

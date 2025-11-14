@@ -98,11 +98,21 @@ public class InitiativePageLocators {
     /** Draft filter button */
     public static By draftFilter = By.xpath("//span[normalize-space()='Draft']");
     
-    /** Inbox filter button */
-    public static By inboxFilter = By.xpath("//span[id='FltrCountInbox']");
+    /** Inbox filter button - Primary */
+    public static By inboxFilter = By.xpath("//span[id='FltrCountInbox'] | //span[normalize-space()='Inbox'] | //button[contains(.,'Inbox')]");
     
-    /** Watchlist filter button */
-    public static By watchlistFilter = By.xpath("//span[normalize-space()='Watchlist']");
+    /** Inbox filter button - Alternative locators */
+    public static By inboxFilterAlt1 = By.xpath("//span[id='FltrCountInbox']");
+    public static By inboxFilterAlt2 = By.xpath("//button[contains(.,'Inbox')]");
+    public static By inboxFilterAlt3 = By.xpath("//span[normalize-space()='Inbox']/parent::button");
+    
+    /** Watchlist filter button - Primary */
+    public static By watchlistFilter = By.xpath("//span[id='FltrCountWatchlist'] | //span[normalize-space()='Watchlist'] | //button[contains(.,'Watchlist')]");
+    
+    /** Watchlist filter button - Alternative locators */
+    public static By watchlistFilterAlt1 = By.xpath("//span[id='FltrCountWatchlist']");
+    public static By watchlistFilterAlt2 = By.xpath("//button[contains(.,'Watchlist')]");
+    public static By watchlistFilterAlt3 = By.xpath("//span[normalize-space()='Watchlist']/parent::button");
     
     /** Search input field */
     public static By searchInput = By.xpath("//input[@placeholder='Search']");
@@ -115,8 +125,11 @@ public class InitiativePageLocators {
     /** Visible records count */
     public static By countRecords = By.xpath("//div[@class='count-info']");
     
-    /** Inbox count displayed on filter */
-    public static By inboxCount = By.xpath("//span[id='FltrCountInbox']");
+    /** Inbox count displayed on filter badge */
+    public static By inboxCount = By.xpath("//span[id='FltrCountInbox'] | //span[normalize-space()='Inbox']/following-sibling::span | //button[contains(.,'Inbox')]//span[contains(@class,'count')]");
+    
+    /** Watchlist count displayed on filter badge */
+    public static By watchlistCount = By.xpath("//span[id='FltrCountWatchlist'] | //span[normalize-space()='Watchlist']/following-sibling::span | //button[contains(.,'Watchlist')]//span[contains(@class,'count')]");
     
     /** Grid rows/records in the table */
     public static By gridRows = By.xpath("//div[contains(@class,'ag-center-cols-container')]//div[@role='row'] | //table//tbody//tr[@role='row']");
@@ -129,6 +142,17 @@ public class InitiativePageLocators {
     
     /** Records per page dropdown */
     public static By recordsPerPageDropdown = By.xpath("//select[contains(@class,'page-size')] | //div[contains(@class,'page-size')]//select");
+    
+    /** Pagination forward/next page button */
+    public static By paginationForwardButton = By.xpath("//svg[@class='MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-vubbuv']");
+          
+    
+    /** Pagination backward/previous page button */
+    public static By paginationBackwardButton = By.xpath(
+            "//button[.//svg[@data-testid='ArrowBackIcon']] | " +
+            "//svg[@data-testid='ArrowBackIcon']/parent::button | " +
+            "//svg[@data-testid='ArrowBackIcon']/ancestor::button | " );
+            
     
     /** Toast alert message */
     public static By toastAlert = By.xpath("//div[@id=4]//div");
