@@ -16,6 +16,44 @@ import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.MediaEntityBuilder;
 import com.aventstack.extentreports.Status;
 
+/**
+ * Page Object Model (POM) for Initiative Management Module
+ * 
+ * FRAMEWORK DESIGN PRINCIPLES:
+ * ============================
+ * This class follows BEST PRACTICES for Selenium framework design:
+ * 
+ * 1. LOCATOR CENTRALIZATION:
+ *    - All static locators are maintained in InitiativePageLocators.java
+ *    - Methods use InitiativePageLocators.locatorName for reusability
+ *    - Dynamic locators use helper methods like getDynamicNOIOption()
+ * 
+ * 2. SEPARATION OF CONCERNS:
+ *    - Locators: Defined in InitiativePageLocators class
+ *    - Actions: Implemented in this Page class
+ *    - Test Logic: Kept in test classes
+ * 
+ * 3. MAINTAINABILITY:
+ *    - Single Point of Change: Update locator once in Locators class
+ *    - No Hardcoded Locators: All locators reference central class
+ *    - Clear Method Names: Self-documenting code
+ * 
+ * 4. ROBUSTNESS:
+ *    - Fallback Strategies: Multiple locator attempts for stability
+ *    - Wait Mechanisms: Proper waits for element visibility
+ *    - Error Handling: Comprehensive try-catch blocks
+ * 
+ * WHY THIS APPROACH?
+ * ==================
+ * ✅ Easier Maintenance: Change locator once, affects all usages
+ * ✅ Better Readability: Clear separation of what and how
+ * ✅ Reusability: Locators and methods can be reused across tests
+ * ✅ Testability: Easy to mock and test individual components
+ * ✅ Team Collaboration: Clear structure for multiple developers
+ * 
+ * @author Automation Team
+ * @version 2.0 - Refactored for best practices
+ */
 public class InitiativePage extends ActionEngine {
 
     private WebDriver driver;
@@ -194,9 +232,9 @@ public class InitiativePage extends ActionEngine {
         waitForSeconds(10);
     }
 
-         public void SelectNOI(String noiValue) throws Exception {
-        // Build dynamic XPath for list item (not dropdown)
-        	 By noiOption = By.xpath("//div[@class='MuiBox-root css-ah0zvi']//td[normalize-space(text())='" + noiValue + "']");
+    public void SelectNOI(String noiValue) throws Exception {
+        // Use dynamic locator from InitiativePageLocators for consistency
+        By noiOption = InitiativePageLocators.getDynamicNOIOption(noiValue);
 
 
         
@@ -233,7 +271,7 @@ public class InitiativePage extends ActionEngine {
             
             // IMPORTANT: Ensure we're in the correct context (check for iframes)
             System.out.println("  🔍 Checking for iframes in the page...");
-            int totalIframeCount = driver.findElements(By.tagName("iframe")).size();
+            int totalIframeCount = driver.findElements(InitiativePageLocators.allIframes).size();
             System.out.println("  📋 Found " + totalIframeCount + " iframe(s) on the entire page");
             
             // Try to find the modal element itself for debugging
@@ -249,13 +287,13 @@ public class InitiativePage extends ActionEngine {
                     "return window.getComputedStyle(arguments[0]).visibility;", modal));
                 
                 // CRITICAL: Check for iframes INSIDE the modal
-                int modalIframeCount = modal.findElements(By.tagName("iframe")).size();
+                int modalIframeCount = modal.findElements(InitiativePageLocators.allIframes).size();
                 System.out.println("  📋 Found " + modalIframeCount + " iframe(s) INSIDE the modal");
                 
                 if (modalIframeCount > 0) {
                     System.out.println("  ⚠️ IFRAME DETECTED INSIDE MODAL - Attempting to switch...");
                     try {
-                        WebElement modalIframe = modal.findElement(By.tagName("iframe"));
+                        WebElement modalIframe = modal.findElement(InitiativePageLocators.allIframes);
                         System.out.println("    - Iframe src: " + modalIframe.getAttribute("src"));
                         System.out.println("    - Iframe id: " + modalIframe.getAttribute("id"));
                         System.out.println("    - Iframe name: " + modalIframe.getAttribute("name"));
@@ -659,7 +697,7 @@ public class InitiativePage extends ActionEngine {
             if (!success) {
                 try {
                     System.out.println("\n  📍 Strategy 10: Find textarea fresh by ID and set value");
-                    WebElement freshTextarea = driver.findElement(By.id("TextField220"));
+                    WebElement freshTextarea = driver.findElement(InitiativePageLocators.getDynamicTextareaById("TextField220"));
                     
                     ((JavascriptExecutor) driver).executeScript(
                         "var element = arguments[0];" +
@@ -860,15 +898,13 @@ public class InitiativePage extends ActionEngine {
             // Strategy 2: If failed, try alternative locator (without -label suffix)
             if (!success) {
                 System.out.println("  ↪ Trying alternative locator without -label suffix...");
-                By alternativeLocator = By.xpath("//input[@id='DatePicker24']");
-                success = setDateWithMultipleStrategies(alternativeLocator, startdate, "Start Date (Alt)");
+                success = setDateWithMultipleStrategies(InitiativePageLocators.startdateAlt, startdate, "Start Date (Alt)");
             }
             
             // Strategy 3: Try finding any date input nearby
             if (!success) {
                 System.out.println("  ↪ Trying to find date input by placeholder...");
-                By placeholderLocator = By.xpath("//input[contains(@placeholder,'start') or contains(@placeholder,'Start')]");
-                success = setDateWithMultipleStrategies(placeholderLocator, startdate, "Start Date (Placeholder)");
+                success = setDateWithMultipleStrategies(InitiativePageLocators.startdateByPlaceholder, startdate, "Start Date (Placeholder)");
             }
             
             if (success) {
@@ -937,29 +973,25 @@ public class InitiativePage extends ActionEngine {
             // Strategy 2: Try alternative locator (without -label suffix)
             if (!success) {
                 System.out.println("\n  📍 Strategy 2: Alternative locator (without -label suffix)");
-                By alternativeLocator = By.xpath("//input[@id='DatePicker31']");
-                success = setDateWithMultipleStrategies(alternativeLocator, enddate, "End Date (Alt)");
+                success = setDateWithMultipleStrategies(InitiativePageLocators.enddateAlt, enddate, "End Date (Alt)");
             }
             
             // Strategy 3: Try by position (second date input on page)
             if (!success) {
                 System.out.println("\n  📍 Strategy 3: Finding second date input field");
-                By secondDateInput = By.xpath("(//input[@type='text' and contains(@id,'DatePicker')])[2]");
-                success = setDateWithMultipleStrategies(secondDateInput, enddate, "End Date (2nd Input)");
+                success = setDateWithMultipleStrategies(InitiativePageLocators.secondDateInput, enddate, "End Date (2nd Input)");
             }
             
             // Strategy 4: Try finding by placeholder
             if (!success) {
                 System.out.println("\n  📍 Strategy 4: Finding by placeholder text");
-                By placeholderLocator = By.xpath("//input[contains(@placeholder,'end') or contains(@placeholder,'End')]");
-                success = setDateWithMultipleStrategies(placeholderLocator, enddate, "End Date (Placeholder)");
+                success = setDateWithMultipleStrategies(InitiativePageLocators.enddateByPlaceholder, enddate, "End Date (Placeholder)");
             }
             
             // Strategy 5: Try finding the actual input field near the label
             if (!success) {
                 System.out.println("\n  📍 Strategy 5: Finding input near end date label");
-                By nearLabelLocator = By.xpath("//label[contains(text(),'End') or contains(text(),'end')]/following-sibling::input | //label[contains(text(),'End') or contains(text(),'end')]/..//input");
-                success = setDateWithMultipleStrategies(nearLabelLocator, enddate, "End Date (Near Label)");
+                success = setDateWithMultipleStrategies(InitiativePageLocators.enddateNearLabel, enddate, "End Date (Near Label)");
             }
             
             if (success) {
@@ -1221,15 +1253,15 @@ public class InitiativePage extends ActionEngine {
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
             Actions actions = new Actions(driver);
             
-            // 1. Click dropdown
+            // 1. Click dropdown - Using centralized locator
             WebElement dropdown = wait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//span[@id='Dropdown20-option']")));
+                InitiativePageLocators.IniBG));
             actions.moveToElement(dropdown).click().perform();
             
-            // 2. Wait and find option
+            // 2. Wait and find option - Using dynamic helper method
             Thread.sleep(1000);
             WebElement option = wait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//*[normalize-space(text())='" + bgName + "']")));
+                InitiativePageLocators.getDynamicBGOption(bgName)));
             
             // 3. Move to option and click
             actions.moveToElement(option).click().perform();
@@ -1247,15 +1279,15 @@ public class InitiativePage extends ActionEngine {
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
             Actions actions = new Actions(driver);
             
-            // 1. Click dropdown
+            // 1. Click dropdown - Using centralized locator
             WebElement dropdown = wait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//span[@id='Dropdown21-option']")));
+                InitiativePageLocators.IniOU));
             actions.moveToElement(dropdown).click().perform();
             
-            // 2. Wait and find option
+            // 2. Wait and find option - Using dynamic helper method
             Thread.sleep(1000);
             WebElement option = wait.until(ExpectedConditions.elementToBeClickable(
-                By.xpath("//*[normalize-space(text())='" + OUName + "']")));
+                InitiativePageLocators.getDynamicOUOption(OUName)));
             
             // 3. Move to option and click
             actions.moveToElement(option).click().perform();
@@ -1541,7 +1573,8 @@ public class InitiativePage extends ActionEngine {
      */
     public WebElement switchToModalWindow(String modalXPath, int timeoutSeconds) {
         try {
-            By modalLocator = By.xpath(modalXPath);
+            // Use dynamic helper method for consistency
+            By modalLocator = InitiativePageLocators.getDynamicModalByXPath(modalXPath);
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeoutSeconds));
             
             // Wait for modal to be visible
@@ -1608,7 +1641,8 @@ public class InitiativePage extends ActionEngine {
      */
     public boolean isModalActive(String modalXPath) {
         try {
-            By modalLocator = By.xpath(modalXPath);
+            // Use dynamic helper method for consistency
+            By modalLocator = InitiativePageLocators.getDynamicModalByXPath(modalXPath);
             WebElement modal = driver.findElement(modalLocator);
             return modal.isDisplayed();
         } catch (Exception e) {
@@ -1624,9 +1658,8 @@ public class InitiativePage extends ActionEngine {
     public boolean closeModalWindow(String modalXPath) {
         try {
             if (isModalActive(modalXPath)) {
-                // Try to find and click close button (X button)
-                By closeButton = By.xpath("//div[contains(@class, 'modal')]//button[contains(@class, 'ms-Button--icon')]");
-                click(closeButton, "Modal Close Button");
+                // Try to find and click close button (X button) - Using centralized locator
+                click(InitiativePageLocators.getModalCloseButton(), "Modal Close Button");
                 reportLogger.info("Modal window closed successfully");
                 return true;
             }
@@ -1648,10 +1681,10 @@ public class InitiativePage extends ActionEngine {
         boolean clicked = false;
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         
-        // FIRST: Debug - Print ALL buttons in modal
+        // FIRST: Debug - Print ALL buttons in modal - Using centralized locator
         System.out.println("\n🔍 DEBUG: Scanning all buttons in modal...");
         try {
-            List<WebElement> allButtons = driver.findElements(By.xpath("//div[@class='modal-105']//button"));
+            List<WebElement> allButtons = driver.findElements(InitiativePageLocators.allModalButtons);
             System.out.println("  📊 Found " + allButtons.size() + " button(s) in modal");
             for (int i = 0; i < allButtons.size(); i++) {
                 WebElement btn = allButtons.get(i);
@@ -1670,10 +1703,10 @@ public class InitiativePage extends ActionEngine {
             System.out.println("  ⚠️ Error scanning buttons: " + e.getMessage());
         }
         
-        // Also check for spans that might contain submit
+        // Also check for spans that might contain submit - Using centralized locator
         System.out.println("\n🔍 DEBUG: Checking for span elements...");
         try {
-            List<WebElement> allSpans = driver.findElements(By.xpath("//div[@class='modal-105']//span[contains(@id,'id__')]"));
+            List<WebElement> allSpans = driver.findElements(InitiativePageLocators.allModalSpans);
             System.out.println("  📊 Found " + allSpans.size() + " span(s) with ID in modal");
             for (int i = 0; i < allSpans.size(); i++) {
                 WebElement span = allSpans.get(i);
@@ -1687,17 +1720,8 @@ public class InitiativePage extends ActionEngine {
             System.out.println("  ⚠️ Error scanning spans: " + e.getMessage());
         }
         
-        // Try multiple locators (most reliable first)
-        By[] locators = {
-            By.xpath("//div[@class='modal-105']//button[contains(@class,'ms-Button--primary')]"), // Most common
-            By.xpath("//div[@class='modal-105']//button[contains(text(),'Submit')]"),
-            By.xpath("//div[@class='modal-105']//button[contains(.,'Submit')]"),
-            By.xpath("//div[@class='modal-105']//button"),  // ANY button in modal
-            InitiativePageLocators.popSubmit,        // Original
-            InitiativePageLocators.popSubmitAlt1,
-            InitiativePageLocators.popSubmitAlt2,
-            InitiativePageLocators.popSubmitAlt3
-        };
+        // Try multiple locators (most reliable first) - Using centralized array
+        By[] locators = InitiativePageLocators.modalSubmitButtonLocators;
         
         String[] locatorNames = {
             "ms-Button--primary in modal (MOST RELIABLE)",
@@ -1930,8 +1954,8 @@ public class InitiativePage extends ActionEngine {
                 return;
             }
 
-            // Wait for and interact with textarea
-            By textareaLocator = By.xpath("//textarea[@id='TextField936']");
+            // Wait for and interact with textarea - Using dynamic helper method
+            By textareaLocator = InitiativePageLocators.getDynamicTextareaById("TextField936");
             waitForElementToBeVisible(textareaLocator, "Comments Textarea");
             
             WebElement textarea = driver.findElement(textareaLocator);
@@ -1940,8 +1964,8 @@ public class InitiativePage extends ActionEngine {
             
             reportLogger.info("Entered comment: " + comment);
             
-            // Click submit button in modal
-            By modalSubmitButton = By.xpath("//button[contains(@class, 'ms-Button--primary') and .//span[normalize-space(text())='Submit']]");
+            // Click submit button in modal - Using dynamic helper method
+            By modalSubmitButton = InitiativePageLocators.getDynamicModalSubmitButton("Submit");
             click(modalSubmitButton, "Modal Submit Button");
             
             reportLogger.pass("Comment submitted successfully");
@@ -2410,6 +2434,7 @@ public class InitiativePage extends ActionEngine {
             if (!clicked && watchlistButton.getTagName().equals("span")) {
                 try {
                     System.out.println("\n  📍 Strategy 4: Click parent button");
+                    // Find parent using XPath relative locator
                     WebElement parentButton = watchlistButton.findElement(By.xpath(".."));
                     if (parentButton.getTagName().equals("button")) {
                         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", parentButton);
@@ -2455,15 +2480,8 @@ public class InitiativePage extends ActionEngine {
             
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
             
-            // Try multiple locators to find the count
-            By[] countLocators = {
-                By.xpath("//span[id='FltrCountInbox']"),
-                By.xpath("//span[normalize-space()='Inbox']/following-sibling::span"),
-                By.xpath("//span[normalize-space()='Inbox']/..//span[contains(@class,'count')]"),
-                By.xpath("//span[normalize-space()='Inbox']/..//span[contains(@class,'badge')]"),
-                By.xpath("//button[contains(.,'Inbox')]//span[contains(@class,'count')]"),
-                By.xpath("//button[contains(.,'Inbox')]")  // Try button itself
-            };
+            // Try multiple locators to find the count - Using centralized array
+            By[] countLocators = InitiativePageLocators.inboxCountLocators;
             
             String[] locatorNames = {
                 "span[id='FltrCountInbox']",
@@ -2530,14 +2548,8 @@ public class InitiativePage extends ActionEngine {
             System.out.println("\n🔢 Getting Watchlist Count from Badge");
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
             
-            // Try multiple locators to find the count
-            By[] countLocators = {
-                By.xpath("//span[id='FltrCountWatchlist']"),
-                By.xpath("//span[normalize-space()='Watchlist']/following-sibling::span"),
-                By.xpath("//span[normalize-space()='Watchlist']/..//span[contains(@class,'count')]"),
-                By.xpath("//span[normalize-space()='Watchlist']/..//span[contains(@class,'badge')]"),
-                By.xpath("//button[contains(.,'Watchlist')]//span[contains(@class,'count')]")
-            };
+            // Try multiple locators to find the count - Using centralized array
+            By[] countLocators = InitiativePageLocators.watchlistCountLocators;
             
             for (By locator : countLocators) {
                 try {
@@ -2585,19 +2597,11 @@ public class InitiativePage extends ActionEngine {
             
             Thread.sleep(2000); // Wait for grid to stabilize
             
-            // Try multiple locators for grid rows
-            By[] rowLocators = {
-            	By.xpath("//div[@id='root']/div[2]/div/div[2]/div[2]/div/div/div[4]/table/tbody/tr/td/div/p"),
-                By.xpath("//div[@role='row' and contains(@class,'ag-row')]"),
-                By.xpath("//div[contains(@class,'ag-center-cols-container')]//div[@role='row']"),
-                By.xpath("//table//tbody//tr[@role='row']"),
-                By.xpath("//div[@role='gridcell']/../.."),
-                By.xpath("//div[contains(@class,'data-grid')]//div[@role='row']"),
-                By.xpath("//div[contains(@class,'ag-row')]"),  // Simplified AG Grid
-                By.xpath("//tr[contains(@class,'ag-row')]")    // Table-based AG Grid
-            };
+            // Try multiple locators for grid rows - Using centralized array
+            By[] rowLocators = InitiativePageLocators.gridRowLocators;
             
             String[] locatorNames = {
+                "root path to p elements",
                 "div[role='row'] with ag-row class",
                 "ag-center-cols-container rows",
                 "table tbody tr[role='row']",

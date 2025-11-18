@@ -6,10 +6,19 @@ import org.openqa.selenium.By;
  * Page Object Locators for Initiative Management Module
  * 
  * This class contains all locators used in Initiative page automation.
- * Following Page Object Model (POM) design pattern.
+ * Following Page Object Model (POM) design pattern with:
+ * - Static locators for reusable elements
+ * - Dynamic helper methods for parameterized locators
+ * - Alternative locators for robust element finding
+ * 
+ * DESIGN PRINCIPLES:
+ * 1. Keep all static/reusable locators here
+ * 2. Use helper methods (getDynamic*) for parameterized locators
+ * 3. Group related locators with clear comments
+ * 4. Provide alternative locators for unstable elements
  * 
  * @author Automation Team
- * @version 1.0
+ * @version 2.0 - Refactored for consistency
  */
 public class InitiativePageLocators {
 
@@ -29,6 +38,9 @@ public class InitiativePageLocators {
     
     /** Initiative node in navigation */
     public static By initiativeNode = By.xpath("//*[normalize-space(text())='Initiative']");
+    
+    /** All iframes on page */
+    public static By allIframes = By.tagName("iframe");
     
     // ==================== PAGE HEADERS ====================
     
@@ -168,12 +180,161 @@ public class InitiativePageLocators {
     /** Close button by text */
     public static By closeButtonByText = By.xpath("//button[contains(text(),'×')]");
     
-    // ==================== GETTER METHODS ====================
+    // ==================== MODAL SUBMIT LOCATORS (FALLBACKS) ====================
+    
+    /** Array of fallback locators for modal submit button - Try in order for reliability */
+    public static By[] modalSubmitButtonLocators = {
+        By.xpath("//div[@class='modal-105']//button[contains(@class,'ms-Button--primary')]"), // Most common
+        By.xpath("//div[@class='modal-105']//button[contains(text(),'Submit')]"),
+        By.xpath("//div[@class='modal-105']//button[contains(.,'Submit')]"),
+        By.xpath("//div[@class='modal-105']//button"),  // ANY button in modal (aggressive)
+        popSubmitAlt1,
+        popSubmitAlt2,
+        popSubmitAlt3
+    };
+    
+    /** All buttons in modal (for debugging) */
+    public static By allModalButtons = By.xpath("//div[@class='modal-105']//button");
+    
+    /** All spans with ID in modal (for debugging) */
+    public static By allModalSpans = By.xpath("//div[@class='modal-105']//span[contains(@id,'id__')]");
+    
+    // ==================== DATE PICKER ALTERNATIVE LOCATORS ====================
+    
+    /** Alternative start date locator (without -label suffix) */
+    public static By startdateAlt = By.xpath("//input[@id='DatePicker24']");
+    
+    /** Start date by placeholder */
+    public static By startdateByPlaceholder = By.xpath("//input[contains(@placeholder,'start') or contains(@placeholder,'Start')]");
+    
+    /** Alternative end date locator (without -label suffix) */
+    public static By enddateAlt = By.xpath("//input[@id='DatePicker31']");
+    
+    /** Second date input (for end date) */
+    public static By secondDateInput = By.xpath("(//input[@type='text' and contains(@id,'DatePicker')])[2]");
+    
+    /** End date by placeholder */
+    public static By enddateByPlaceholder = By.xpath("//input[contains(@placeholder,'end') or contains(@placeholder,'End')]");
+    
+    /** End date near label */
+    public static By enddateNearLabel = By.xpath("//label[contains(text(),'End') or contains(text(),'end')]/following-sibling::input | //label[contains(text(),'End') or contains(text(),'end')]/..//input");
+    
+    // ==================== INBOX & WATCHLIST COUNT LOCATORS ====================
+    
+    /** Array of inbox count locators (fallback strategies) */
+    public static By[] inboxCountLocators = {
+        By.xpath("//span[id='FltrCountInbox']"),
+        By.xpath("//span[normalize-space()='Inbox']/following-sibling::span"),
+        By.xpath("//span[normalize-space()='Inbox']/..//span[contains(@class,'count')]"),
+        By.xpath("//span[normalize-space()='Inbox']/..//span[contains(@class,'badge')]"),
+        By.xpath("//button[contains(.,'Inbox')]//span[contains(@class,'count')]"),
+        By.xpath("//button[contains(.,'Inbox')]")  // Try button itself
+    };
+    
+    /** Array of watchlist count locators (fallback strategies) */
+    public static By[] watchlistCountLocators = {
+        By.xpath("//span[id='FltrCountWatchlist']"),
+        By.xpath("//span[normalize-space()='Watchlist']/following-sibling::span"),
+        By.xpath("//span[normalize-space()='Watchlist']/..//span[contains(@class,'count')]"),
+        By.xpath("//span[normalize-space()='Watchlist']/..//span[contains(@class,'badge')]"),
+        By.xpath("//button[contains(.,'Watchlist')]//span[contains(@class,'count')]")
+    };
+    
+    // ==================== GRID ROW LOCATORS ====================
+    
+    /** Array of grid row locators (try in order for compatibility) */
+    public static By[] gridRowLocators = {
+        By.xpath("//div[@id='root']/div[2]/div/div[2]/div[2]/div/div/div[4]/table/tbody/tr/td/div/p"),
+        By.xpath("//div[@role='row' and contains(@class,'ag-row')]"),
+        By.xpath("//div[contains(@class,'ag-center-cols-container')]//div[@role='row']"),
+        By.xpath("//table//tbody//tr[@role='row']"),
+        By.xpath("//div[@role='gridcell']/../.."),
+        By.xpath("//div[contains(@class,'data-grid')]//div[@role='row']"),
+        By.xpath("//div[contains(@class,'ag-row')]"),  // Simplified AG Grid
+        By.xpath("//tr[contains(@class,'ag-row')]")    // Table-based AG Grid
+    };
+    
+    // ==================== DYNAMIC HELPER METHODS ====================
+    
+    /**
+     * Get dynamic locator for NOI (Number of Initiatives) option by value
+     * @param noiValue The NOI value text to search for
+     * @return By locator for the specific NOI option
+     */
+    public static By getDynamicNOIOption(String noiValue) {
+        return By.xpath("//div[@class='MuiBox-root css-ah0zvi']//td[normalize-space(text())='" + noiValue + "']");
+    }
+    
+    /**
+     * Get dynamic locator for any option by normalized text
+     * @param optionText The option text to search for
+     * @return By locator for the option
+     */
+    public static By getDynamicOptionByText(String optionText) {
+        return By.xpath("//*[normalize-space(text())='" + optionText + "']");
+    }
+    
+    /**
+     * Get dynamic locator for Business Group dropdown option
+     * @param bgName The Business Group name
+     * @return By locator for the BG option
+     */
+    public static By getDynamicBGOption(String bgName) {
+        return By.xpath("//*[normalize-space(text())='" + bgName + "']");
+    }
+    
+    /**
+     * Get dynamic locator for Operating Unit dropdown option
+     * @param ouName The Operating Unit name
+     * @return By locator for the OU option
+     */
+    public static By getDynamicOUOption(String ouName) {
+        return By.xpath("//*[normalize-space(text())='" + ouName + "']");
+    }
+    
+    /**
+     * Get dynamic locator for textarea by ID
+     * @param textareaId The ID of the textarea
+     * @return By locator for the textarea
+     */
+    public static By getDynamicTextareaById(String textareaId) {
+        return By.xpath("//textarea[@id='" + textareaId + "']");
+    }
+    
+    /**
+     * Get dynamic locator for modal by xpath
+     * @param modalXPath The XPath string for modal
+     * @return By locator for the modal
+     */
+    public static By getDynamicModalByXPath(String modalXPath) {
+        return By.xpath(modalXPath);
+    }
+    
+    /**
+     * Get dynamic modal close button
+     * @return By locator for modal close button
+     */
+    public static By getModalCloseButton() {
+        return By.xpath("//div[contains(@class, 'modal')]//button[contains(@class, 'ms-Button--icon')]");
+    }
+    
+    /**
+     * Get dynamic modal submit button with text
+     * @param submitText The text on the submit button (e.g., "Submit")
+     * @return By locator for modal submit button
+     */
+    public static By getDynamicModalSubmitButton(String submitText) {
+        return By.xpath("//button[contains(@class, 'ms-Button--primary') and .//span[normalize-space(text())='" + submitText + "']]");
+    }
+    
+    // ==================== GETTER METHODS (Deprecated - Use direct access) ====================
     
     /**
      * Get Initiative Title locator
      * @return By locator for Initiative Title field
+     * @deprecated Use InitiativePageLocators.IniTitle directly
      */
+    @Deprecated
     public static By getIniTitle() {
         return IniTitle;
     }
@@ -181,7 +342,9 @@ public class InitiativePageLocators {
     /**
      * Get Additional Notes locator
      * @return By locator for Additional Notes textarea
+     * @deprecated Use InitiativePageLocators.additionalNotes directly
      */
+    @Deprecated
     public static By getAdditionalNotes() {
         return additionalNotes;
     }

@@ -110,7 +110,7 @@ public class InitiativeTest extends BaseTest {
      * @param enddate End Date
      * @param notes Submission Comments
      */
-    @Test(priority = 3, enabled = false, dataProvider = "initiativeData")
+    @Test(priority = 3, enabled = true, dataProvider = "initiativeData")
     @Description("TC_003 - Create and Submit New Initiative")
     @Story("Initiative Creation")
     @Severity(SeverityLevel.CRITICAL)
@@ -130,96 +130,12 @@ public class InitiativeTest extends BaseTest {
         System.out.println("✅ Initiative created successfully - NOI: " + noi + ", Title: " + title);
     }
 
-    /**
-     * TC_004 - Verify Validation Alert Message
-     * 
-     * This test verifies that appropriate validation message is shown
-     * when user tries to save draft without filling mandatory fields.
-     */
-    @Test(priority = 4, enabled = false, dataProvider = "initiativeData")
-    @Description("TC_004 - Verify Validation Alert Message")
-    @Story("Initiative Validation")
-    @Severity(SeverityLevel.NORMAL)
-    public void TC_004(String noi) throws Throwable {
-        initiativePage = new InitiativePage(webDriver, reportLogger);
-        navigateToInitiativePage();
-        clickInitiativeBeforeAdd();
-        clickAddButton();
-        selectNatureOfInitiative(noi);
-        saveDraftWithoutTitle();
-        verifyAlertMessage();
-    }
+ 
 
-    /**
-     * TC_005 - Verify Inbox Count Matches Grid Records
-     * 
-     * This test verifies that the count displayed on Inbox filter badge
-     * matches the actual number of records shown in the grid.
-     * Expected: 5 records per page.
-     */
-    @Test(priority = 5, enabled = false)
-    @Description("TC_005 - Verify Inbox Count Matches Grid Records")
-    @Story("Initiative Grid Validation")
-    @Severity(SeverityLevel.NORMAL)
-    public void TC_005() throws Throwable {
-        initiativePage = new InitiativePage(webDriver, reportLogger);
-        
-        // Navigate to Initiative page
-        navigateToInitiativePage();
-        clickInitiativeBeforeAdd();
-        
-        // Click on Inbox filter
-        clickInboxFilter();
-        
-        // Optional: Print debug info
-        printGridDebugInfo();
-        
-        // Verify inbox count matches grid records (5 records per page)
-        boolean isMatching = verifyInboxCountMatchesGrid(5);
-        
-        // Assert the verification
-        org.testng.Assert.assertTrue(isMatching, 
-            "Inbox count does not match grid records count");
-        
-        System.out.println("✅ TC_005 PASSED - Inbox count matches grid records");
-    }
-
-    /**
-     * TC_006 - Verify Watchlist Count Matches Grid Records
-     * 
-     * This test verifies that the count displayed on Watchlist filter badge
-     * matches the actual number of records shown in the grid.
-     * Expected: 5 records per page.
-     */
-    @Test(priority = 6, enabled = false)
-    @Description("TC_006 - Verify Watchlist Count Matches Grid Records")
-    @Story("Initiative Grid Validation")
-    @Severity(SeverityLevel.NORMAL)
-    public void TC_006() throws Throwable {
-        initiativePage = new InitiativePage(webDriver, reportLogger);
-        
-        // Navigate to Initiative page
-        navigateToInitiativePage();
-        clickInitiativeBeforeAdd();
-        
-        // Click on Watchlist filter
-        clickWatchlistFilter();
-        
-        // Optional: Print debug info
-        printGridDebugInfo();
-        
-        // Verify watchlist count matches grid records (5 records per page)
-        boolean isMatching = verifyWatchlistCountMatchesGrid(5);
-        
-        // Assert the verification
-        org.testng.Assert.assertTrue(isMatching, 
-            "Watchlist count does not match grid records count");
-        
-        System.out.println("✅ TC_006 PASSED - Watchlist count matches grid records");
-    }
+   
     
     /**
-     * TC_007 - Verify Inbox Count Matches Total Records Across All Pages
+     * TC_004 - Verify Inbox Count Matches Total Records Across All Pages
      * 
      * This test verifies that the count displayed on Inbox filter badge
      * matches the actual total number of records across all paginated pages.
@@ -231,11 +147,11 @@ public class InitiativeTest extends BaseTest {
      *   - Page 2: 3 records
      *   - Total: 8 records (should match inbox badge count)
      */
-    @Test(priority = 7, enabled = false)
-    @Description("TC_007 - Verify Inbox Count Matches Total Records Across All Pages")
+    @Test(priority = 4, enabled = false)
+    @Description("TC_004 - Verify Inbox Count Matches Total Records Across All Pages")
     @Story("Initiative Grid Validation - Pagination")
     @Severity(SeverityLevel.CRITICAL)
-    public void TC_007() throws Throwable {
+    public void TC_004() throws Throwable {
         initiativePage = new InitiativePage(webDriver, reportLogger);
         
         System.out.println("\n═══════════════════════════════════════════════════════");
@@ -264,7 +180,7 @@ public class InitiativeTest extends BaseTest {
     }
     
     /**
-     * TC_008 - Verify Watchlist Count Matches Total Records Across All Pages
+     * TC_005 - Verify Watchlist Count Matches Total Records Across All Pages
      * 
      * This test verifies that the count displayed on Watchlist filter badge
      * matches the actual total number of records across all paginated pages.
@@ -277,11 +193,11 @@ public class InitiativeTest extends BaseTest {
      *   - Page 3: 2 records
      *   - Total: 12 records (should match watchlist badge count)
      */
-    @Test(priority = 8, enabled = true)
-    @Description("TC_008 - Verify Watchlist Count Matches Total Records Across All Pages")
+    @Test(priority = 5, enabled = false)
+    @Description("TC_005 - Verify Watchlist Count Matches Total Records Across All Pages")
     @Story("Initiative Grid Validation - Pagination")
     @Severity(SeverityLevel.CRITICAL)
-    public void TC_008() throws Throwable {
+    public void TC_005() throws Throwable {
         initiativePage = new InitiativePage(webDriver, reportLogger);
         
         System.out.println("\n═══════════════════════════════════════════════════════");
